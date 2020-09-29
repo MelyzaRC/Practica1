@@ -140,7 +140,36 @@ router.get('/consulta4', (req, res) =>{
 
 /*---------------------CONSULTA5---------------------*/
 router.get('/consulta5', (req, res) =>{
-    res.json('Contenido de la consulta5');
+    const query = ` SELECT 
+                        p.proveedor as ID,
+                        p.nombre as Proveedor,
+                        SUM(d.cantidad) as Cantidad,
+                        SUM(d.cantidad * t.precio_unitario) as Total
+                    FROM proveedor p, compra c, producto t, categoria_producto g, detalle_compra d
+                    WHERE
+                            p.proveedor = c.proveedor 
+                        AND
+                            c.no_orden = d.no_orden
+                        AND
+                            d.producto = t.producto 
+                        AND 
+                            t.categoria = g.categoria
+                        AND 
+                            g.nombre = 'Fresh Vegetables'
+                    GROUP BY ID
+                    ORDER BY Total DESC
+                    LIMIT 5;`;
+    mysqlConnection.query(query, (err, rows, fields) =>{
+        if (!err){
+            if (!err){
+                res.json(rows);
+            }else{
+                console.log(err);
+            }
+        }else{
+            console.log(err);
+        }
+    });
 });
 
 /*---------------------CONSULTA6---------------------*/

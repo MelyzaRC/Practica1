@@ -127,3 +127,42 @@ WHERE
 GROUP BY c.cliente
 ORDER BY totalProductos DESC
 LIMIT 5;
+/*RESULTADO->
+'59', 'Forrest Good', '28', '8714'
+'26', 'Chadwick Osborne', '25', '7396'
+'15', 'Allistair Mcguire', '17', '5033'
+'49', 'Briar Morrison', '16', '6666'
+'69', 'Felicia Wolf', '15', '3380'
+*/
+
+/*
+CONSULTA No. 7
+	-Top 5 de proveedores que más productos han vendido (en dinero) de la categoría de productos ‘Fresh Vegetables’.
+*/
+SELECT 
+	p.proveedor as ID,
+    p.nombre as Proveedor,
+    SUM(d.cantidad) as Cantidad,
+    SUM(d.cantidad * t.precio_unitario) as Total
+FROM proveedor p, compra c, producto t, categoria_producto g, detalle_compra d
+WHERE
+		p.proveedor = c.proveedor 
+	AND
+		c.no_orden = d.no_orden
+    AND
+		d.producto = t.producto 
+	AND 
+		t.categoria = g.categoria
+	AND 
+		g.nombre = 'Fresh Vegetables'
+GROUP BY ID
+ORDER BY Total DESC
+LIMIT 5;
+
+/*RESULTADO->
+'14', 'Xaviera Black', '39', '12556'
+'40', 'Abraham Chapman', '36', '11737'
+'2', 'Henry Carlson', '39', '11694'
+'31', 'Wyoming Terrell', '31', '11220'
+'3', 'Caryn Salinas', '27', '11200'
+*/
