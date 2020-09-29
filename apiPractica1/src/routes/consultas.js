@@ -4,22 +4,138 @@ const mysqlConnection = require('../database');
 
 /*---------------------CONSULTA1---------------------*/
 router.get('/consulta1', (req, res) =>{
-    res.json('Contenido de la consulta1');
+    const query = `SELECT 
+                        v.nombre AS nombreProveedor, 
+                        v.telefono, 
+                        r.no_orden, 
+                        SUM(d.cantidad * p.precio_unitario) AS total
+                    FROM detalle_compra d, producto p, compra r, proveedor v, compania m
+                    WHERE
+                        d.producto = p.producto 
+                    AND 
+                        d.no_orden = r.no_orden 
+                    AND
+                        r.proveedor = v.proveedor 
+                    AND 
+                        m.compania = r.compania
+                    GROUP BY r.no_orden
+                    ORDER BY total DESC
+                    LIMIT 1;`;
+    mysqlConnection.query(query, (err, rows, fields) =>{
+        if (!err){
+            if (!err){
+                res.json(rows);
+            }else{
+                console.log(err);
+            }
+        }else{
+            console.log(err);
+        }
+    });
 });
 
 /*---------------------CONSULTA2---------------------*/
 router.get('/consulta2', (req, res) =>{
-    res.json('Contenido de la consulta2');
+    const query = ` SELECT 
+	                    v.cliente,
+	                    v.nombre,
+	                    SUM(d.cantidad * p.precio_unitario) AS total
+                    FROM detalle_venta d, producto p, venta r, cliente v
+                    WHERE
+		                d.producto = p.producto 
+	                AND 
+		                d.no_orden = r.no_orden 
+	                AND
+		                r.cliente = v.cliente 
+                    GROUP BY r.no_orden
+                    ORDER BY total DESC
+                    LIMIT 1;`;
+    mysqlConnection.query(query, (err, rows, fields) =>{
+        if (!err){
+            if (!err){
+                res.json(rows);
+            }else{
+                console.log(err);
+            }
+        }else{
+            console.log(err);
+        }
+    });
 });
 
 /*---------------------CONSULTA3---------------------*/
 router.get('/consulta3', (req, res) =>{
-    res.json('Contenido de la consulta3');
+    const query = ` SELECT 
+                        direccion, 
+                        region, 
+                        ciudad, 
+                        codigo_postal
+                    FROM(
+                        (SELECT p.direccion as direccion, t.region as region, t.ciudad as ciudad, p.codigo_postal as codigo_postal, sum(d.cantidad) as maximo
+                        FROM detalle_compra d, proveedor p, codigo_postal t, compra c
+                        WHERE 
+                            d.no_orden = c.no_orden and 
+                            p.proveedor = c.proveedor and 
+                            p.codigo_postal = t.codigo_postal 
+                        GROUP BY d.no_orden
+                        ORDER BY maximo DESC
+                        LIMIT 1)
+                        UNION ALL
+                        (SELECT p.direccion as direccion, t.region as region, t.ciudad as ciudad, p.codigo_postal as codigo_postal, sum(d.cantidad) as maximo
+                        FROM detalle_compra d, proveedor p, codigo_postal t, compra c
+                        WHERE 
+                            d.no_orden = c.no_orden and 
+                            p.proveedor = c.proveedor and 
+                            p.codigo_postal = t.codigo_postal 
+                        GROUP BY d.no_orden
+                        ORDER BY maximo ASC
+                        LIMIT 1)
+                    ) datos;`;
+    mysqlConnection.query(query, (err, rows, fields) =>{
+        if (!err){
+            if (!err){
+                res.json(rows);
+            }else{
+                console.log(err);
+            }
+        }else{
+            console.log(err);
+        }
+    });
 });
 
 /*---------------------CONSULTA4---------------------*/
 router.get('/consulta4', (req, res) =>{
-    res.json('Contenido de la consulta4');
+    const query = ` SELECT 
+                        c.cliente as ID,
+                        c.nombre as Nombre,
+                        SUM(d.cantidad) AS Cantidad,
+                        SUM(d.cantidad * p.precio_unitario) as Total
+                    FROM detalle_venta d, venta r, cliente c, categoria_producto a, producto p
+                    WHERE
+                            d.no_orden = r.no_orden 
+                        AND
+                            r.cliente = c.cliente 
+                        AND 
+                            a.categoria = p.categoria 
+                        AND
+                            p.producto = d.producto
+                        AND
+                            a.nombre = 'Cheese'
+                    GROUP BY ID
+                    ORDER BY Cantidad DESC
+                    LIMIT 5;`;
+    mysqlConnection.query(query, (err, rows, fields) =>{
+        if (!err){
+            if (!err){
+                res.json(rows);
+            }else{
+                console.log(err);
+            }
+        }else{
+            console.log(err);
+        }
+    });
 });
 
 /*---------------------CONSULTA5---------------------*/

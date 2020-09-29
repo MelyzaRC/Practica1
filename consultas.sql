@@ -5,10 +5,10 @@
 	-total de la orden por la cual se haya pagado la mayor cantidad de dinero.
 */
 SELECT 
-	v.nombre, 
+	v.nombre as nombreProveedor, 
     v.telefono, 
     r.no_orden, 
-    SUM(d.cantidad * p.precio_unitario) AS total, m.nombre
+    SUM(d.cantidad * p.precio_unitario) AS total
 FROM detalle_compra d, producto p, compra r, proveedor v, compania m
 WHERE
 		d.producto = p.producto 
@@ -71,15 +71,14 @@ SELECT
 	direccion, 
 	region, 
     ciudad, 
-    codigo_postal, 
-    maximo as Numero
+    codigo_postal
 FROM(
 	(SELECT p.direccion as direccion, t.region as region, t.ciudad as ciudad, p.codigo_postal as codigo_postal, sum(d.cantidad) as maximo
 	FROM detalle_compra d, proveedor p, codigo_postal t, compra c
     WHERE 
 		d.no_orden = c.no_orden and 
         p.proveedor = c.proveedor and 
-        p.codigo_postal = t.codigo_postal 
+        p.codigo_postal = t.codigo_postal
 	GROUP BY d.no_orden
     ORDER BY maximo DESC
     LIMIT 1)
@@ -98,3 +97,33 @@ FROM(
 MAS    '694-5400 Vel Ave', 'Oklahoma', 'Tulsa', '52461', '68'
 MENOS  'P.O. Box 127, 9754 Ornare, Street', 'WA', 'Vancouver', '86739', '1'
 */
+
+
+
+/*
+CONSULTA No.4
+	-Número de cliente, 
+    -Nombre, 
+    -Apellido,
+    -Número de órdenes que ha realizado
+    -Total de cada uno de los cinco clientes que más han comprado productos de la categoría ‘Cheese’.
+*/
+SELECT 
+	c.cliente,
+	c.nombre,
+    SUM(d.cantidad) AS totalProductos,
+    SUM(d.cantidad * p.precio_unitario) as totalMonetario
+FROM detalle_venta d, venta r, cliente c, categoria_producto a, producto p
+WHERE
+		d.no_orden = r.no_orden 
+	AND
+		r.cliente = c.cliente 
+	AND 
+		a.categoria = p.categoria 
+	AND
+		p.producto = d.producto
+	AND
+		a.nombre = 'Cheese'
+GROUP BY c.cliente
+ORDER BY totalProductos DESC
+LIMIT 5;
