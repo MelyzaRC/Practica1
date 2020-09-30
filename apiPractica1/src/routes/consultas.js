@@ -140,25 +140,48 @@ router.get('/consulta4', (req, res) =>{
 
 /*---------------------CONSULTA5---------------------*/
 router.get('/consulta5', (req, res) =>{
-    const query = ` SELECT 
-                        p.proveedor as ID,
-                        p.nombre as Proveedor,
-                        SUM(d.cantidad) as Cantidad,
-                        SUM(d.cantidad * t.precio_unitario) as Total
-                    FROM proveedor p, compra c, producto t, categoria_producto g, detalle_compra d
+    const query = ` SELECT
+                        date_format( t2.fecha_registro,'%m') as Mes,
+                        t2.nombre as Cliente,
+                        SUM(p2.precio_unitario*d2.cantidad) as TotalActual
+                    FROM venta v2, detalle_venta d2, cliente t2, producto p2
                     WHERE
-                            p.proveedor = c.proveedor 
-                        AND
-                            c.no_orden = d.no_orden
-                        AND
-                            d.producto = t.producto 
+                            v2.no_orden = d2.no_orden
                         AND 
-                            t.categoria = g.categoria
+                            v2.cliente = t2.cliente
                         AND 
-                            g.nombre = 'Fresh Vegetables'
-                    GROUP BY ID
-                    ORDER BY Total DESC
-                    LIMIT 5;`;
+                            p2.producto = d2.producto
+                    GROUP BY v2.no_orden
+                    HAVING 
+                            TotalActual = (SELECT max(Total) as maximo FROM (
+                                                                    SELECT 
+                                                                        SUM(p.precio_unitario*d.cantidad) as Total
+                                                                    FROM venta v, detalle_venta d, cliente t, producto p
+                                                                    WHERE
+                                                                            v.no_orden = d.no_orden
+                                                                        AND 
+                                                                            v.cliente = t.cliente
+                                                                        AND 
+                                                                            p.producto = d.producto
+                                                                    GROUP BY v.no_orden 
+                                                                    ORDER BY Total DESC
+                                                                )datos )
+                        OR 
+                            TotalActual = (SELECT min(Total) as minimo FROM (
+                                                                    SELECT 
+                                                                        SUM(p.precio_unitario*d.cantidad) as Total
+                                                                    FROM venta v, detalle_venta d, cliente t, producto p
+                                                                    WHERE
+                                                                            v.no_orden = d.no_orden
+                                                                        AND 
+                                                                            v.cliente = t.cliente
+                                                                        AND 
+                                                                            p.producto = d.producto
+                                                                    GROUP BY v.no_orden 
+                                                                    ORDER BY Total DESC
+                                                                )datos )
+                    ORDER BY TotalActual DESC
+                    ;`;
     mysqlConnection.query(query, (err, rows, fields) =>{
         if (!err){
             if (!err){

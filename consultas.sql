@@ -132,6 +132,57 @@ LIMIT 5;
 '69', 'Felicia Wolf', '15', '3380'
 */
 
+/*CONSULTA No. 5
+	-Número de mes de la fecha de registro, 
+    -Nombre y apellido de todos los clientes que más han comprado y los que menos han comprado (en dinero) utilizando una sola consulta.
+*/
+SELECT
+	date_format( t2.fecha_registro,'%m') as Mes,
+    t2.nombre as Cliente,
+    SUM(p2.precio_unitario*d2.cantidad) as TotalActual
+FROM venta v2, detalle_venta d2, cliente t2, producto p2
+WHERE
+		v2.no_orden = d2.no_orden
+	AND 
+		v2.cliente = t2.cliente
+	AND 
+		p2.producto = d2.producto
+GROUP BY v2.no_orden
+HAVING 
+		TotalActual = (SELECT max(Total) as maximo FROM (
+												SELECT 
+													SUM(p.precio_unitario*d.cantidad) as Total
+												FROM venta v, detalle_venta d, cliente t, producto p
+												WHERE
+														v.no_orden = d.no_orden
+													AND 
+														v.cliente = t.cliente
+													AND 
+														p.producto = d.producto
+												GROUP BY v.no_orden 
+												ORDER BY Total DESC
+											)datos )
+	OR 
+		TotalActual = (SELECT min(Total) as minimo FROM (
+												SELECT 
+													SUM(p.precio_unitario*d.cantidad) as Total
+												FROM venta v, detalle_venta d, cliente t, producto p
+												WHERE
+														v.no_orden = d.no_orden
+													AND 
+														v.cliente = t.cliente
+													AND 
+														p.producto = d.producto
+												GROUP BY v.no_orden 
+												ORDER BY Total DESC
+											)datos )
+ORDER BY TotalActual DESC
+;
+/*RESULTADO->
+'07', 'Macon Bowman', '16526.00'
+'12', 'Evelyn Serrano', '8.00'
+*/
+
 /*
 CONSULTA No. 7
 	-Top 5 de proveedores que más productos han vendido (en dinero) de la categoría de productos ‘Fresh Vegetables’.
