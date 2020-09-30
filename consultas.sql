@@ -259,6 +259,17 @@ LIMIT 5;
 '3', 'Caryn Salinas', '27', '11200'
 */
 
+/*CONSULTA No. 8
+	-dirección, 
+    -región, 
+    -ciudad y 
+    -código postal de los clientes que más han comprado y de los que menos (en dinero) en una sola consulta.
+*/
+
+/*RESULTADO->*/
+
+
+
 /*CONSULTA No. 9
 	-Nombre del proveedor,
     -Número de teléfono, 
