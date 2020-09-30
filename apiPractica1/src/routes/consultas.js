@@ -197,8 +197,54 @@ router.get('/consulta5', (req, res) =>{
 
 /*---------------------CONSULTA6---------------------*/
 router.get('/consulta6', (req, res) =>{
-    res.json('Contenido de la consulta6');
+    const query = ` SELECT
+                        c.nombre as Categoria,
+                        SUM(d.cantidad*p.precio_unitario) as Total
+                    FROM categoria_producto c, producto p, detalle_venta d
+                    WHERE
+                            c.categoria = p.categoria
+                        AND
+                            d.producto = p.producto
+                    GROUP BY c.categoria
+                    HAVING Total = (SELECT 
+                                        max(Total1) AS maximo 
+                                    FROM (
+                                        SELECT SUM(p1.precio_unitario*d1.cantidad) as Total1 
+                                        FROM
+                                            categoria_producto c1, producto p1, detalle_venta d1
+                                        WHERE 
+                                                c1.categoria = p1.categoria
+                                            AND
+                                                d1.producto = p1.producto
+                                        GROUP BY c1.categoria)datos
+                                    )
+                                OR 
+                            Total = (SELECT 
+                                        min(Total1) AS minimo 
+                                    FROM (
+                                        SELECT SUM(p1.precio_unitario*d1.cantidad) as Total1 
+                                        FROM
+                                            categoria_producto c1, producto p1, detalle_venta d1
+                                        WHERE 
+                                                c1.categoria = p1.categoria
+                                            AND
+                                                d1.producto = p1.producto
+                                        GROUP BY c1.categoria)datos
+                                    )
+                    ORDER BY Total DESC`;
+    mysqlConnection.query(query, (err, rows, fields) =>{
+        if (!err){
+            if (!err){
+                res.json(rows);
+            }else{
+                console.log(err);
+            }
+        }else{
+            console.log(err);
+        }
+    });
 });
+
 
 /*---------------------CONSULTA7---------------------*/
 router.get('/consulta7', (req, res) =>{

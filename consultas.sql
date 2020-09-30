@@ -183,6 +183,50 @@ ORDER BY TotalActual DESC
 '12', 'Evelyn Serrano', '8.00'
 */
 
+/*CONSULTA No. 6 
+	-Nombre de la categoría más y menos vendida y el total vendido en dinero (en una sola consulta).
+*/
+SELECT
+	c.nombre as Categoria,
+    SUM(d.cantidad*p.precio_unitario) as Total
+FROM categoria_producto c, producto p, detalle_venta d
+WHERE
+		c.categoria = p.categoria
+    AND
+		d.producto = p.producto
+GROUP BY c.categoria
+HAVING Total = (SELECT 
+					max(Total1) AS maximo 
+				FROM (
+					SELECT SUM(p1.precio_unitario*d1.cantidad) as Total1 
+                    FROM
+						categoria_producto c1, producto p1, detalle_venta d1
+					WHERE 
+							c1.categoria = p1.categoria
+						AND
+							d1.producto = p1.producto
+					GROUP BY c1.categoria)datos
+                )
+			OR 
+		Total = (SELECT 
+					min(Total1) AS minimo 
+				FROM (
+					SELECT SUM(p1.precio_unitario*d1.cantidad) as Total1 
+                    FROM
+						categoria_producto c1, producto p1, detalle_venta d1
+					WHERE 
+							c1.categoria = p1.categoria
+						AND
+							d1.producto = p1.producto
+					GROUP BY c1.categoria)datos
+                )
+ORDER BY Total DESC;
+
+/*RESULTADO ->
+'Fresh Vegetables', '218747.00'
+'Pets', '44396.00'
+*/
+
 /*
 CONSULTA No. 7
 	-Top 5 de proveedores que más productos han vendido (en dinero) de la categoría de productos ‘Fresh Vegetables’.
