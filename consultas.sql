@@ -98,10 +98,7 @@ MAS    '694-5400 Vel Ave', 'Oklahoma', 'Tulsa', '52461', '68'
 MENOS  'P.O. Box 127, 9754 Ornare, Street', 'WA', 'Vancouver', '86739', '1'
 */
 
-
-
-/*
-CONSULTA No.4
+/*CONSULTA No.4
 	-Número de cliente, 
     -Nombre, 
     -Apellido,
@@ -166,3 +163,37 @@ LIMIT 5;
 '31', 'Wyoming Terrell', '31', '11220'
 '3', 'Caryn Salinas', '27', '11200'
 */
+
+/*CONSULTA No. 9
+	-Nombre del proveedor,
+    -Número de teléfono, 
+    -Número de orden,
+	-Total de la orden por la cual se haya obtenido la menor cantidad de producto.
+*/
+SELECT
+	Proveedor, 
+    Telefono, 
+    Orden, 
+    Total 
+FROM (
+	SELECT 
+		p.nombre as Proveedor,
+		p.telefono as Telefono,
+		c.no_orden as Orden,
+		SUM(d.cantidad * t.precio_unitario) as Total,
+		SUM(d.cantidad) as Cantidad
+	FROM proveedor p, compra c, detalle_compra d, producto t
+	WHERE
+			p.proveedor = c.proveedor
+		AND
+			c.no_orden = d.no_orden 
+		AND 
+			t.producto = d.producto
+	GROUP BY Orden 
+	ORDER BY Cantidad DESC
+) datos 
+where datos.Cantidad = 25;
+/*RESULTADO->
+*/
+
+

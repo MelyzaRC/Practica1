@@ -6,34 +6,46 @@ SELECT DISTINCT
     t.telefono_compania 
 FROM temporal t;
 
+INSERT INTO region(nombre)
+SELECT DISTINCT 
+	t.region
+FROM temporal t;
+
 INSERT INTO codigo_postal(codigo_postal, ciudad, region)
 SELECT DISTINCT 
 	CAST(t.codigo_postal AS DECIMAL), 
     t.ciudad, 
-    t.region 
-FROM temporal t;
+    r.region
+FROM temporal t, region r
+WHERE t.region = r.nombre ;
 
 INSERT INTO proveedor(nombre, correo, telefono, fecha_registro, direccion, codigo_postal)
 SELECT DISTINCT 
 	t.nombre, 
     t.correo,
     t.telefono, 
-    t.fecha_registro,
+    str_to_date(t.fecha_registro, '%d/%m/%Y'),
     t.direccion,
-    t.codigo_postal
-FROM temporal t
-WHERE t.tipo = 'p';
+    c.codigo_postal
+FROM temporal t, codigo_postal c
+WHERE 
+		t.tipo = 'p'
+	AND 
+		c.codigo_postal = t.codigo_postal;
 
 INSERT INTO cliente(nombre, correo, telefono, fecha_registro, direccion, codigo_postal)
 SELECT DISTINCT 
 	t.nombre, 
     t.correo,
     t.telefono, 
-    t.fecha_registro,
+	str_to_date(t.fecha_registro, '%d/%m/%Y'),
     t.direccion,
     t.codigo_postal
-FROM temporal t
-WHERE t.tipo = 'c';
+FROM temporal t, codigo_postal c
+WHERE 
+		t.tipo = 'c'
+	AND
+		c.codigo_postal = t.codigo_postal;
 
 INSERT INTO categoria_producto(nombre)
 SELECT DISTINCT 
@@ -60,12 +72,12 @@ WHERE
 		p.nombre = t.nombre
 	AND
 		t.tipo = 'p';
-        
+
 INSERT INTO detalle_compra(no_orden, producto, cantidad)
 SELECT 
 	c.no_orden, 
     d.producto, 
-    CAST(t.cantidad AS DECIMAL)
+    t.cantidad
 FROM compra c, proveedor p, compania n, producto d, temporal t
 WHERE 
 		t.tipo = 'p' 
@@ -79,8 +91,7 @@ WHERE
 		t.nombre_compania = n.nombre 
 	AND
 		d.nombre = t.producto;
-        
-        
+
 INSERT INTO venta(compania, cliente)	
 SELECT DISTINCT 
 	c.compania,
@@ -97,7 +108,7 @@ INSERT INTO detalle_venta(no_orden, producto, cantidad)
 SELECT 
 	c.no_orden, 
     d.producto, 
-    CAST(t.cantidad AS DECIMAL)
+    t.cantidad
 FROM venta c, cliente p, compania n, producto d, temporal t
 WHERE 
 		t.tipo = 'c' 
