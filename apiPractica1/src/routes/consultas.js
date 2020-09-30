@@ -282,7 +282,61 @@ router.get('/consulta7', (req, res) =>{
 
 /*---------------------CONSULTA8---------------------*/
 router.get('/consulta8', (req, res) =>{
-    const query = ` `;
+    const query = ` SELECT
+                        t.direccion as Direccion,
+                        r.nombre as Region,
+                        c.codigo_postal as CodigoPostal
+                    FROM codigo_postal c, region r, cliente t, detalle_venta d, venta v, producto o
+                    WHERE
+                            c.codigo_postal = t.codigo_postal
+                        AND
+                            c.region = r.region
+                        AND 
+                            d.producto = o.producto
+                        AND 
+                            v.no_orden = d.no_orden
+                        AND 
+                            v.cliente = t.cliente
+                    GROUP BY t.cliente
+                    HAVING SUM(d.cantidad*o.precio_unitario) = 	    (  
+                                                                    SELECT MAX(Total) FROM	(
+                                                                                                SELECT
+                                                                                                    SUM(d1.cantidad*o1.precio_unitario) as Total
+                                                                                                FROM codigo_postal c1, region r1, cliente t1, detalle_venta d1, venta v1, producto o1
+                                                                                                WHERE
+                                                                                                        c1.codigo_postal = t1.codigo_postal
+                                                                                                    AND
+                                                                                                        c1.region = r1.region
+                                                                                                    AND 
+                                                                                                        d1.producto = o1.producto
+                                                                                                    AND 
+                                                                                                        v1.no_orden = d1.no_orden
+                                                                                                    AND 
+                                                                                                        v1.cliente = t1.cliente
+                                                                                                GROUP BY t1.cliente
+                                                                                            ) datos
+                                                                    )
+                            OR
+                            SUM(d.cantidad*o.precio_unitario) = 	(
+                                                                    SELECT MIN(Total) FROM	(
+                                                                                                SELECT
+                                                                                                    SUM(d1.cantidad*o1.precio_unitario) as Total
+                                                                                                FROM codigo_postal c1, region r1, cliente t1, detalle_venta d1, venta v1, producto o1
+                                                                                                WHERE
+                                                                                                        c1.codigo_postal = t1.codigo_postal
+                                                                                                    AND
+                                                                                                        c1.region = r1.region
+                                                                                                    AND 
+                                                                                                        d1.producto = o1.producto
+                                                                                                    AND 
+                                                                                                        v1.no_orden = d1.no_orden
+                                                                                                    AND 
+                                                                                                        v1.cliente = t1.cliente
+                                                                                                GROUP BY t1.cliente
+                                                                                            ) datos
+                                                                    )
+                    ORDER BY SUM(d.cantidad*o.precio_unitario) DESC
+                    ;`;
     mysqlConnection.query(query, (err, rows, fields) =>{
         if (!err){
             if (!err){
