@@ -332,29 +332,55 @@ ORDER BY SUM(d.cantidad*o.precio_unitario) DESC
 	-Total de la orden por la cual se haya obtenido la menor cantidad de producto.
 */
 SELECT
-	Proveedor, 
-    Telefono, 
-    Orden, 
-    Total 
-FROM (
-	SELECT 
-		p.nombre as Proveedor,
-		p.telefono as Telefono,
-		c.no_orden as Orden,
-		SUM(d.cantidad * t.precio_unitario) as Total,
-		SUM(d.cantidad) as Cantidad
-	FROM proveedor p, compra c, detalle_compra d, producto t
-	WHERE
-			p.proveedor = c.proveedor
-		AND
-			c.no_orden = d.no_orden 
-		AND 
-			t.producto = d.producto
-	GROUP BY Orden 
-	ORDER BY Cantidad DESC
-) datos 
-where datos.Cantidad = 25;
+	p.nombre,
+    p.telefono,
+    v.no_orden,
+    SUM(d.cantidad*t.precio_unitario) as Total
+FROM proveedor p, compra v, detalle_compra d, producto t, compania n
+WHERE
+		v.proveedor = p.proveedor
+	AND
+		d.no_orden = v.no_orden
+	AND 
+		d.producto = t.producto 
+	AND 
+		v.compania = n.compania 
+GROUP BY v.no_orden
+HAVING
+	SUM(d.cantidad) = (
+						SELECT 
+							MIN(Cantidad)
+                        FROM (
+							SELECT 
+								SUM(d1.cantidad) as Cantidad
+                            FROM proveedor p1, compra v1, detalle_compra d1, producto t1, compania n1
+                            WHERE
+									v1.proveedor = p1.proveedor
+								AND
+									d1.no_orden = v1.no_orden
+								AND 
+									d1.producto = t1.producto 
+								AND 
+									v1.compania = n1.compania
+							GROUP BY v1.no_orden
+                            ORDER BY Cantidad ASC
+                        )datos
+			)
+ORDER BY Total DESC;
+;
 /*RESULTADO->
+'Henry Carlson', '063-340-7971', '508', '101.00'
+'Elvis Bass', '034-155-7886', '496', '161.00'
+'Wayne Simmons', '072-145-3002', '484', '407.00'
+'Jameson Owens', '082-747-4799', '445', '129.00'
+'Elizabeth Fox', '026-375-4130', '230', '208.00'
+'Macey Mcdowell', '088-708-7987', '217', '392.00'
+'Stuart Brewer', '019-896-4001', '117', '297.00'
+'Fuller Reid', '085-287-5494', '99', '308.00'
+'Henry Carlson', '063-340-7971', '74', '415.00'
+'Ingrid Fry', '039-523-0192', '64', '183.00'
+'Pearl Parker', '036-029-0248', '51', '53.00'
+'Unity Cooley', '005-349-6264', '25', '53.00'
 */
 
 

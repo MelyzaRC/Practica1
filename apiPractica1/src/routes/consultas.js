@@ -245,7 +245,6 @@ router.get('/consulta6', (req, res) =>{
     });
 });
 
-
 /*---------------------CONSULTA7---------------------*/
 router.get('/consulta7', (req, res) =>{
     const query = ` SELECT 
@@ -352,13 +351,73 @@ router.get('/consulta8', (req, res) =>{
 
 /*---------------------CONSULTA9---------------------*/
 router.get('/consulta9', (req, res) =>{
-    res.json('Contenido de la consulta9');
+    const query = ` SELECT
+                        p.nombre,
+                        p.telefono,
+                        v.no_orden,
+                        SUM(d.cantidad*t.precio_unitario) as Total
+                    FROM proveedor p, compra v, detalle_compra d, producto t, compania n
+                    WHERE
+                            v.proveedor = p.proveedor
+                        AND
+                            d.no_orden = v.no_orden
+                        AND 
+                            d.producto = t.producto 
+                        AND 
+                            v.compania = n.compania 
+                    GROUP BY v.no_orden
+                    HAVING
+                        SUM(d.cantidad) = (
+                                            SELECT 
+                                                MIN(Cantidad)
+                                            FROM (
+                                                SELECT 
+                                                    SUM(d1.cantidad) as Cantidad
+                                                FROM proveedor p1, compra v1, detalle_compra d1, producto t1, compania n1
+                                                WHERE
+                                                        v1.proveedor = p1.proveedor
+                                                    AND
+                                                        d1.no_orden = v1.no_orden
+                                                    AND 
+                                                        d1.producto = t1.producto 
+                                                    AND 
+                                                        v1.compania = n1.compania
+                                                GROUP BY v1.no_orden
+                                                ORDER BY Cantidad ASC
+                                            )datos
+                                )
+                    ORDER BY Total DESC;
+                    ;`;
+    mysqlConnection.query(query, (err, rows, fields) =>{
+        if (!err){
+            if (!err){
+                res.json(rows);
+            }else{
+                console.log(err);
+            }
+        }else{
+            console.log(err);
+        }
+    });
 });
+
 
 /*---------------------CONSULTA10---------------------*/
 router.get('/consulta10', (req, res) =>{
-    res.json('Contenido de la consulta10');
+    const query = ` `;
+    mysqlConnection.query(query, (err, rows, fields) =>{
+        if (!err){
+            if (!err){
+                res.json(rows);
+            }else{
+                console.log(err);
+            }
+        }else{
+            console.log(err);
+        }
+    });
 });
+
 
 /*---------------------ELIMINARTEMPORAL---------------------*/
 router.get('/eliminarTemporal', (req, res) =>{
