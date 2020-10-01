@@ -442,13 +442,22 @@ router.get('/consulta10', (req, res) =>{
 
 /*---------------------ELIMINARTEMPORAL---------------------*/
 router.get('/eliminarTemporal', (req, res) =>{
-    res.json('Contenido de la consulta eliminarTemporal');
+    const query = ` TRUNCATE TABLE temporal;`;
+    mysqlConnection.query(query, (err, rows, fields) =>{
+        if (!err){
+            if (!err){
+                res.json({'status':'Los datos de la tala temporal han sido eliminados con exito'});
+            }else{
+                console.log(err);
+            }
+        }else{
+            console.log(err);
+        }
+    });
 });
 
 /*---------------------ELIMINARMODELO---------------------*/
-router.get('/eliminarModelo', (req, res) =>{
-    res.json('Contenido de la consulta eliminarModelo');
-});
+
 
 /*---------------------CARGARTEMPORAL---------------------*/
 router.get('/cargarTemporal', (req, res) =>{

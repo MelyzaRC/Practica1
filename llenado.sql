@@ -1,3 +1,28 @@
+LOAD DATA LOCAL INFILE '/home/melyza/Documents/Practica1/DataCenterData.csv'
+INTO TABLE temporal
+FIELDS TERMINATED BY ';'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS
+(
+	nombre_compania, 
+	contacto_compania, 
+	correo_compania, 
+	telefono_compania, 
+	tipo, 
+	nombre, 
+	correo, 
+	telefono,
+	fecha_registro, 
+	direccion, 
+	ciudad, 
+	codigo_postal, 
+	region, 
+	producto, 
+	categoria_producto,
+	cantidad,
+	precio_unitario
+);
+
 INSERT INTO compania(nombre, contacto, correo, telefono)
 SELECT DISTINCT 
 	t.nombre_compania, 
