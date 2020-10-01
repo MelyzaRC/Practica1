@@ -383,4 +383,41 @@ ORDER BY Total DESC;
 'Unity Cooley', '005-349-6264', '25', '53.00'
 */
 
+/*CONSULTA No.10
+	-Top 10 de los clientes que más productos han comprado de la categoría ‘Seafood’.
+*/
+SELECT
+	c.cliente as ID,
+    c.nombre as Cliente,
+    c.correo as Email,
+    c.telefono as Telefono,
+    c.fecha_registro as FechaRegistro,
+    c.codigo_postal as CodigoPostal,
+    SUM(d.cantidad) as Cantidad
+FROM cliente c, venta v, detalle_venta d, producto p, categoria_producto g
+WHERE
+		c.cliente = v.cliente
+	AND
+		d.no_orden = v.no_orden
+	AND 
+		d.producto = p.producto 
+	AND
+		p.categoria = g.categoria
+	AND 
+		g.nombre = 'Seafood'
+GROUP BY c.cliente
+ORDER BY SUM(d.cantidad) DESC
+LIMIT 10;
+/*RESULTADO->*
+'11', 'Cheyenne Gilliam', 'ipsum@elitNulla.edu', '049-045-0633', '2012-06-25', '52461', '19'
+'61', 'Gwendolyn Graves', 'senectus.et@IntegermollisInteger.net', '021-736-1279', '2013-09-16', '67631', '16'
+'43', 'Aspen Wagner', 'fermentum@Duiselementumdui.org', '024-601-2996', '2015-02-21', '35546', '14'
+'15', 'Allistair Mcguire', 'Ut.tincidunt@molestie.org', '085-458-8174', '2015-08-10', '13020', '13'
+'89', 'Holmes Calderon', 'pede@Fusce.co.uk', '084-517-5132', '2011-02-08', '73705', '12'
+'23', 'Ryan Mcfarland', 'ac@parturientmontesnascetur.com', '094-333-0089', '2012-11-16', '64356', '11'
+'14', 'Ariana Valentine', 'eu.neque.pellentesque@sedtortor.co.uk', '025-747-3218', '2018-11-16', '43755', '11'
+'72', 'Lucius William', 'netus.et@auctornonfeugiat.co.uk', '030-728-1458', '2017-07-29', '52461', '11'
+'17', 'Rana Cortez', 'orci@laoreetliberoet.org', '014-210-5487', '2017-06-26', '39323', '10'
+'56', 'Whilemina Carson', 'non@iaculisneceleifend.net', '037-750-1250', '2012-09-10', '27751', '10'
+/
 

@@ -404,7 +404,28 @@ router.get('/consulta9', (req, res) =>{
 
 /*---------------------CONSULTA10---------------------*/
 router.get('/consulta10', (req, res) =>{
-    const query = ` `;
+    const query = ` SELECT
+                        c.cliente as ID,
+                        c.nombre as Cliente,
+                        c.correo as Email,
+                        c.telefono as Telefono,
+                        c.fecha_registro as FechaRegistro,
+                        c.codigo_postal as CodigoPostal,
+                        SUM(d.cantidad) as Cantidad
+                    FROM cliente c, venta v, detalle_venta d, producto p, categoria_producto g
+                    WHERE
+                            c.cliente = v.cliente
+                        AND
+                            d.no_orden = v.no_orden
+                        AND 
+                            d.producto = p.producto 
+                        AND
+                            p.categoria = g.categoria
+                        AND 
+                            g.nombre = 'Seafood'
+                    GROUP BY c.cliente
+                    ORDER BY SUM(d.cantidad) DESC
+                    LIMIT 10;`;
     mysqlConnection.query(query, (err, rows, fields) =>{
         if (!err){
             if (!err){
