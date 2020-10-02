@@ -401,7 +401,6 @@ router.get('/consulta9', (req, res) =>{
     });
 });
 
-
 /*---------------------CONSULTA10---------------------*/
 router.get('/consulta10', (req, res) =>{
     const query = ` SELECT
@@ -439,14 +438,13 @@ router.get('/consulta10', (req, res) =>{
     });
 });
 
-
 /*---------------------ELIMINARTEMPORAL---------------------*/
 router.get('/eliminarTemporal', (req, res) =>{
     const query = ` TRUNCATE TABLE temporal;`;
     mysqlConnection.query(query, (err, rows, fields) =>{
         if (!err){
             if (!err){
-                res.json({'status':'Los datos de la tala temporal han sido eliminados con exito'});
+                res.json({'status':'Los datos de la tabla temporal han sido eliminados con exito'});
             }else{
                 console.log(err);
             }
@@ -455,9 +453,6 @@ router.get('/eliminarTemporal', (req, res) =>{
         }
     });
 });
-
-/*---------------------ELIMINARMODELO---------------------*/
-
 
 /*---------------------CARGARTEMPORAL---------------------*/
 router.get('/cargarTemporal', (req, res) =>{
@@ -498,69 +493,260 @@ router.get('/cargarTemporal', (req, res) =>{
 
 /*---------------------CARGARMODELO---------------------*/
 router.get('/cargarModelo', (req, res) =>{
-    res.json('Contenido de la consulta cargarModelo');
-});
+    const query0 = `    INSERT INTO compania(nombre, contacto, correo, telefono)
+                        SELECT DISTINCT 
+                            t.nombre_compania, 
+                            t.contacto_compania, 
+                            t.correo_compania, 
+                            t.telefono_compania 
+                        FROM temporal t;`;
+    const query1 = `    INSERT INTO region(nombre)
+                        SELECT DISTINCT 
+                            t.region
+                        FROM temporal t;`;
+    const query2 = `    INSERT INTO codigo_postal(codigo_postal, ciudad, region)
+                        SELECT DISTINCT 
+                            CAST(t.codigo_postal AS DECIMAL), 
+                            t.ciudad, 
+                            r.region
+                        FROM temporal t, region r
+                        WHERE t.region = r.nombre ;`;
+    const query3 = `    INSERT INTO proveedor(nombre, correo, telefono, fecha_registro, direccion, codigo_postal)
+                        SELECT DISTINCT 
+                            t.nombre, 
+                            t.correo,
+                            t.telefono, 
+                            str_to_date(t.fecha_registro, '%d/%m/%Y'),
+                            t.direccion,
+                            c.codigo_postal
+                        FROM temporal t, codigo_postal c
+                        WHERE 
+                                t.tipo = 'p'
+                            AND 
+                                c.codigo_postal = t.codigo_postal;`;
+    const query4 = `    INSERT INTO cliente(nombre, correo, telefono, fecha_registro, direccion, codigo_postal)
+                        SELECT DISTINCT 
+                            t.nombre, 
+                            t.correo,
+                            t.telefono, 
+                            str_to_date(t.fecha_registro, '%d/%m/%Y'),
+                            t.direccion,
+                            t.codigo_postal
+                        FROM temporal t, codigo_postal c
+                        WHERE 
+                                t.tipo = 'c'
+                            AND
+                                c.codigo_postal = t.codigo_postal;`;
+    const query5 = `    INSERT INTO categoria_producto(nombre)
+                        SELECT DISTINCT 
+                            t.categoria_producto 
+                        FROM temporal t;`;
+    const query6 = `    INSERT INTO producto(nombre, precio_unitario, categoria)
+                        SELECT DISTINCT 
+                            t.producto,
+                            CAST(t.precio_unitario AS DECIMAL),
+                            c.categoria
+                        FROM temporal t, categoria_producto c
+                        WHERE
+                                c.nombre = t.categoria_producto;`;
+    const query7 = `    INSERT INTO compra(compania, proveedor)	
+                        SELECT DISTINCT 
+                            c.compania,
+                            p.proveedor
+                        FROM temporal t, compania c, proveedor p
+                        WHERE 
+                                c.nombre = t.nombre_compania
+                            AND
+                                p.nombre = t.nombre
+                            AND
+                                t.tipo = 'p';`;
+    const query8 = `    INSERT INTO detalle_compra(no_orden, producto, cantidad)
+                        SELECT 
+                            c.no_orden, 
+                            d.producto, 
+                            t.cantidad
+                        FROM compra c, proveedor p, compania n, producto d, temporal t
+                        WHERE 
+                                t.tipo = 'p' 
+                            AND
+                                c.proveedor = p.proveedor 
+                            AND
+                                n.compania = c.compania 
+                            AND 
+                                t.nombre = p.nombre 
+                            AND
+                                t.nombre_compania = n.nombre 
+                            AND
+                                d.nombre = t.producto;`;
+    const query9 = `    INSERT INTO venta(compania, cliente)	
+                        SELECT DISTINCT 
+                            c.compania,
+                            e.cliente
+                        FROM temporal t, compania c, cliente e
+                        WHERE 
+                                c.nombre = t.nombre_compania
+                            AND
+                                e.nombre = t.nombre
+                            AND
+                                t.tipo = 'c';`;
+    const query10 = `   INSERT INTO detalle_venta(no_orden, producto, cantidad)
+                        SELECT 
+                            c.no_orden, 
+                            d.producto, 
+                            t.cantidad
+                        FROM venta c, cliente p, compania n, producto d, temporal t
+                        WHERE 
+                                t.tipo = 'c' 
+                            AND
+                                c.cliente = p.cliente
+                            AND
+                                n.compania = c.compania 
+                            AND 
+                                t.nombre = p.nombre 
+                            AND
+                                t.nombre_compania = n.nombre 
+                            AND
+                                d.nombre = t.producto;`;
 
-router.get('/verCompanias', (req, res) =>{
-    mysqlConnection.query('select * from compania', (err, rows, fields) =>{
+    mysqlConnection.query(query0, (err, rows, fields) =>{
         if (!err){
-            res.json(rows);
         }else{
-            console.log(err);
         }
     });
-});
-
-
-/*
-router.get('/:id', (req, res) => {
-    const {id} = req.params;
-    mysqlConnection.query('select * from employees where id = ?', [id], (err, rows, fields) =>{
+    mysqlConnection.query(query1, (err, rows, fields) =>{
         if (!err){
-            res.json(rows[0]);
         }else{
-            console.log(err);
         }
     });
-});
-
-router.post('/', (req, res) =>{
-    const {id, name, salary} = req.body;
-    const query = `
-        CALL employeeAddOrEdit(?, ?, ?);
-    `;
-    mysqlConnection.query(query, [id, name, salary], (err, rows, fields) =>{
+    mysqlConnection.query(query2, (err, rows, fields) =>{
         if (!err){
-            res.json({Status: 'Employeed Saved'});
         }else{
-            console.log(err);
         }
-    })
-});
-
-router.put('/:id', (req, res) =>{
-    const {name, salary} = req.body;
-    const {id} = req.params;
-    const query = `
-        CALL employeeAddOrEdit(?,?,?)
-    `;
-    mysqlConnection.query(query, [id, name, salary], (err, rows, fields) => {
-        if(!err){
-            res.json({Status: 'Empleado actualizado'});
+    });
+    mysqlConnection.query(query3, (err, rows, fields) =>{
+        if (!err){
         }else{
-            console.log(err);
+        }
+    });
+    mysqlConnection.query(query4, (err, rows, fields) =>{
+        if (!err){
+        }else{
+        }
+    });
+    mysqlConnection.query(query5, (err, rows, fields) =>{
+        if (!err){
+        }else{
+        }
+    });
+    mysqlConnection.query(query6, (err, rows, fields) =>{
+        if (!err){
+        }else{
+        }
+    });
+    mysqlConnection.query(query7, (err, rows, fields) =>{
+        if (!err){
+        }else{
+        }
+    });
+    mysqlConnection.query(query8, (err, rows, fields) =>{
+        if (!err){
+        }else{
+        }
+    });
+    mysqlConnection.query(query9, (err, rows, fields) =>{
+        if (!err){
+        }else{
+        }
+    });
+    mysqlConnection.query(query10, (err, rows, fields) =>{
+        if (!err){
+            res.json({status:'Se ha cargado los datos al modelo con exito'});
+        }else{
         }
     });
 });
 
-router.delete('/:id', (req, res) => {
-    const {id} = req.params;
-    mysqlConnection.query('DELETE from employees where id =?', [id], (err, rows, fields) =>{
-        if(!err){
-            res.json({status:'Empleado eliminado'});
+/*---------------------ELIMINARMODELO---------------------*/
+router.get('/eliminarModelo', (req, res) =>{
+    const query0 = `SET FOREIGN_KEY_CHECKS = 0;`;
+    const query1 = `TRUNCATE region;`;
+    const query2 = `TRUNCATE codigo_postal;`;
+    const query3 = `TRUNCATE proveedor;`;
+    const query4 = `TRUNCATE cliente;`;
+    const query5 = `TRUNCATE compania;`;
+    const query6 = `TRUNCATE categoria_producto;`;
+    const query7 = `TRUNCATE producto;`;
+    const query8 = `TRUNCATE venta;`;
+    const query9 = `TRUNCATE compra`;
+    const query10 = `TRUNCATE detalle_venta`;
+    const query11 = `TRUNCATE detalle_compra`;
+    const query12 = `SET FOREIGN_KEY_CHECKS = 1;`;
+    mysqlConnection.query(query0, (err, rows, fields) =>{
+        if (!err){
         }else{
-            console.log(err);
         }
     });
-});*/
+    mysqlConnection.query(query1, (err, rows, fields) =>{
+        if (!err){
+        }else{
+        }
+    });
+    mysqlConnection.query(query2, (err, rows, fields) =>{
+        if (!err){
+        }else{
+        }
+    });
+    mysqlConnection.query(query3, (err, rows, fields) =>{
+        if (!err){
+        }else{
+        }
+    });
+    mysqlConnection.query(query4, (err, rows, fields) =>{
+        if (!err){
+        }else{
+        }
+    });
+    mysqlConnection.query(query5, (err, rows, fields) =>{
+        if (!err){
+        }else{
+        }
+    });
+    mysqlConnection.query(query6, (err, rows, fields) =>{
+        if (!err){
+        }else{
+        }
+    });
+    mysqlConnection.query(query7, (err, rows, fields) =>{
+        if (!err){
+        }else{
+        }
+    });
+    mysqlConnection.query(query8, (err, rows, fields) =>{
+        if (!err){
+        }else{
+        }
+    });
+    mysqlConnection.query(query9, (err, rows, fields) =>{
+        if (!err){
+        }else{
+        }
+    });
+    mysqlConnection.query(query10, (err, rows, fields) =>{
+        if (!err){
+        }else{
+        }
+    });
+    mysqlConnection.query(query11, (err, rows, fields) =>{
+        if (!err){
+        }else{
+        }
+    });
+    mysqlConnection.query(query12, (err, rows, fields) =>{
+        if (!err){
+            res.json({status:'Se ha vaciado el modelo con exito'});
+        }else{
+        }
+    });
+});
+
 module.exports = router;

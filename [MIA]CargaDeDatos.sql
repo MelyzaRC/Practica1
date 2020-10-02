@@ -1,3 +1,19 @@
+TRUNCATE TABLE temporal;
+
+SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE region;
+TRUNCATE codigo_postal;
+TRUNCATE proveedor;
+TRUNCATE cliente;
+TRUNCATE compania;
+TRUNCATE categoria_producto;
+TRUNCATE producto;
+TRUNCATE venta;
+TRUNCATE compra;
+TRUNCATE detalle_venta;
+TRUNCATE detalle_compra;
+SET FOREIGN_KEY_CHECKS = 1;
+
 LOAD DATA LOCAL INFILE '/home/melyza/Documents/Practica1/DataCenterData.csv'
 INTO TABLE temporal
 FIELDS TERMINATED BY ';'
